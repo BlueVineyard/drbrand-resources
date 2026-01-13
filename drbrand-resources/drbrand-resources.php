@@ -3,7 +3,7 @@
 /**
  * Plugin Name: DrBrand Resources
  * Description: Resources filter and listing for the Resource post type.
- * Version: 1.4.2
+ * Version: 1.4.8
  * Author: Rohan T George
  */
 
@@ -11,7 +11,7 @@ if (! defined('ABSPATH')) {
 	exit;
 }
 
-define('DBR_RESOURCES_VERSION', '1.4.2');
+define('DBR_RESOURCES_VERSION', '1.4.8');
 define('DBR_RESOURCES_DIR', plugin_dir_path(__FILE__));
 define('DBR_RESOURCES_URL', plugin_dir_url(__FILE__));
 
@@ -40,10 +40,15 @@ function dbr_resources_register_assets()
 add_shortcode('drbrand_resources', 'dbr_resources_shortcode');
 function dbr_resources_shortcode($atts)
 {
+	// Get settings from database
+	$settings = get_option('dbr_settings', array());
+	$default_per_group = isset($settings['default_per_group']) ? (int) $settings['default_per_group'] : 3;
+	$default_per_page = isset($settings['default_per_page']) ? (int) $settings['default_per_page'] : 9;
+
 	$atts = shortcode_atts(
 		array(
-			'per_group' => 3,
-			'per_page' => 9,
+			'per_group' => $default_per_group,
+			'per_page' => $default_per_page,
 			'free_downloads_heading' => '',
 			'book_purchase_heading' => '',
 			'video_heading' => '',
@@ -82,18 +87,18 @@ function dbr_resources_shortcode($atts)
 
 	ob_start();
 ?>
-	<div class="dbr-resources" data-archive-url="<?php echo esc_url($archive_url); ?>">
-		<form class="dbr-resources__filters" method="get" action="<?php echo esc_url($archive_url); ?>">
-			<label class="dbr-resources__label">
-				<span>Search</span>
-				<input type="search" name="s" value="<?php echo esc_attr($search_query); ?>" placeholder="Search resources">
-			</label>
-			<div class="dbr-resources__label">
-				<span>Content Type</span>
-				<div class="dbr-custom-select" data-name="resource-type">
-					<button type="button" class="dbr-custom-select__trigger">
-						<span class="dbr-custom-select__value">
-							<?php
+<div class="dbr-resources" data-archive-url="<?php echo esc_url($archive_url); ?>">
+    <form class="dbr-resources__filters" method="get" action="<?php echo esc_url($archive_url); ?>">
+        <label class="dbr-resources__label">
+            <span>Search</span>
+            <input type="search" name="s" value="<?php echo esc_attr($search_query); ?>" placeholder="Search resources">
+        </label>
+        <div class="dbr-resources__label">
+            <span>Content Type</span>
+            <div class="dbr-custom-select" data-name="resource-type">
+                <button type="button" class="dbr-custom-select__trigger">
+                    <span class="dbr-custom-select__value">
+                        <?php
 							if ('all' === $resource_type) {
 								echo 'All';
 							} else {
@@ -101,39 +106,39 @@ function dbr_resources_shortcode($atts)
 								echo $selected_term ? esc_html($selected_term->name) : 'All';
 							}
 							?>
-						</span>
-						<svg class="dbr-custom-select__arrow" width="12" height="8" viewBox="0 0 12 8" fill="none">
-							<path d="M1 1L6 6L11 1" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-								stroke-linejoin="round" />
-						</svg>
-					</button>
-					<ul class="dbr-custom-select__dropdown">
-						<li class="dbr-custom-select__option<?php echo 'all' === $resource_type ? ' is-selected' : ''; ?>"
-							data-value="all">All</li>
-						<?php foreach ($terms as $term) : ?>
-							<li class="dbr-custom-select__option<?php echo $resource_type === $term->slug ? ' is-selected' : ''; ?>"
-								data-value="<?php echo esc_attr($term->slug); ?>">
-								<?php echo esc_html($term->name); ?>
-							</li>
-						<?php endforeach; ?>
-					</ul>
-					<select name="resource-type" class="dbr-custom-select__hidden">
-						<option value="all" <?php selected($resource_type, 'all'); ?>>All</option>
-						<?php foreach ($terms as $term) : ?>
-							<option value="<?php echo esc_attr($term->slug); ?>"
-								<?php selected($resource_type, $term->slug); ?>>
-								<?php echo esc_html($term->name); ?>
-							</option>
-						<?php endforeach; ?>
-					</select>
-				</div>
-			</div>
-			<div class="dbr-resources__label">
-				<span>Sort By</span>
-				<div class="dbr-custom-select" data-name="sort">
-					<button type="button" class="dbr-custom-select__trigger">
-						<span class="dbr-custom-select__value">
-							<?php
+                    </span>
+                    <svg class="dbr-custom-select__arrow" width="12" height="8" viewBox="0 0 12 8" fill="none">
+                        <path d="M1 1L6 6L11 1" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </button>
+                <ul class="dbr-custom-select__dropdown">
+                    <li class="dbr-custom-select__option<?php echo 'all' === $resource_type ? ' is-selected' : ''; ?>"
+                        data-value="all">All</li>
+                    <?php foreach ($terms as $term) : ?>
+                    <li class="dbr-custom-select__option<?php echo $resource_type === $term->slug ? ' is-selected' : ''; ?>"
+                        data-value="<?php echo esc_attr($term->slug); ?>">
+                        <?php echo esc_html($term->name); ?>
+                    </li>
+                    <?php endforeach; ?>
+                </ul>
+                <select name="resource-type" class="dbr-custom-select__hidden">
+                    <option value="all" <?php selected($resource_type, 'all'); ?>>All</option>
+                    <?php foreach ($terms as $term) : ?>
+                    <option value="<?php echo esc_attr($term->slug); ?>"
+                        <?php selected($resource_type, $term->slug); ?>>
+                        <?php echo esc_html($term->name); ?>
+                    </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+        </div>
+        <div class="dbr-resources__label">
+            <span>Sort By</span>
+            <div class="dbr-custom-select" data-name="sort">
+                <button type="button" class="dbr-custom-select__trigger">
+                    <span class="dbr-custom-select__value">
+                        <?php
 							$sort_labels = array(
 								'newest' => 'Newest',
 								'oldest' => 'Oldest',
@@ -142,39 +147,39 @@ function dbr_resources_shortcode($atts)
 							);
 							echo isset($sort_labels[$sort_by]) ? esc_html($sort_labels[$sort_by]) : 'Newest';
 							?>
-						</span>
-						<svg class="dbr-custom-select__arrow" width="12" height="8" viewBox="0 0 12 8" fill="none">
-							<path d="M1 1L6 6L11 1" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-								stroke-linejoin="round" />
-						</svg>
-					</button>
-					<ul class="dbr-custom-select__dropdown">
-						<li class="dbr-custom-select__option<?php echo 'newest' === $sort_by ? ' is-selected' : ''; ?>"
-							data-value="newest">Newest</li>
-						<li class="dbr-custom-select__option<?php echo 'oldest' === $sort_by ? ' is-selected' : ''; ?>"
-							data-value="oldest">Oldest</li>
-						<li class="dbr-custom-select__option<?php echo 'title-asc' === $sort_by ? ' is-selected' : ''; ?>"
-							data-value="title-asc">Title (A–Z)</li>
-						<li class="dbr-custom-select__option<?php echo 'title-desc' === $sort_by ? ' is-selected' : ''; ?>"
-							data-value="title-desc">Title (Z–A)</li>
-					</ul>
-					<select name="sort" class="dbr-custom-select__hidden">
-						<option value="newest" <?php selected($sort_by, 'newest'); ?>>Newest</option>
-						<option value="oldest" <?php selected($sort_by, 'oldest'); ?>>Oldest</option>
-						<option value="title-asc" <?php selected($sort_by, 'title-asc'); ?>>Title (A–Z)</option>
-						<option value="title-desc" <?php selected($sort_by, 'title-desc'); ?>>Title (Z–A)</option>
-					</select>
-				</div>
-			</div>
-			<button type="submit" class="dbr-resources__submit">Apply</button>
-		</form>
+                    </span>
+                    <svg class="dbr-custom-select__arrow" width="12" height="8" viewBox="0 0 12 8" fill="none">
+                        <path d="M1 1L6 6L11 1" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </button>
+                <ul class="dbr-custom-select__dropdown">
+                    <li class="dbr-custom-select__option<?php echo 'newest' === $sort_by ? ' is-selected' : ''; ?>"
+                        data-value="newest">Newest</li>
+                    <li class="dbr-custom-select__option<?php echo 'oldest' === $sort_by ? ' is-selected' : ''; ?>"
+                        data-value="oldest">Oldest</li>
+                    <li class="dbr-custom-select__option<?php echo 'title-asc' === $sort_by ? ' is-selected' : ''; ?>"
+                        data-value="title-asc">Title (A–Z)</li>
+                    <li class="dbr-custom-select__option<?php echo 'title-desc' === $sort_by ? ' is-selected' : ''; ?>"
+                        data-value="title-desc">Title (Z–A)</li>
+                </ul>
+                <select name="sort" class="dbr-custom-select__hidden">
+                    <option value="newest" <?php selected($sort_by, 'newest'); ?>>Newest</option>
+                    <option value="oldest" <?php selected($sort_by, 'oldest'); ?>>Oldest</option>
+                    <option value="title-asc" <?php selected($sort_by, 'title-asc'); ?>>Title (A–Z)</option>
+                    <option value="title-desc" <?php selected($sort_by, 'title-desc'); ?>>Title (Z–A)</option>
+                </select>
+            </div>
+        </div>
+        <button type="submit" class="dbr-resources__submit">Apply</button>
+    </form>
 
-		<?php if ('all' !== $resource_type) : ?>
-			<?php echo dbr_resources_render_single_term($resource_type, $search_query, $sort_args, (int) $atts['per_page'], $archive_url); ?>
-		<?php else : ?>
-			<?php echo dbr_resources_render_grouped($terms, (int) $atts['per_group'], $search_query, $sort_args, $archive_url, $group_headings); ?>
-		<?php endif; ?>
-	</div>
+    <?php if ('all' !== $resource_type) : ?>
+    <?php echo dbr_resources_render_single_term($resource_type, $search_query, $sort_args, (int) $atts['per_page'], $archive_url); ?>
+    <?php else : ?>
+    <?php echo dbr_resources_render_grouped($terms, (int) $atts['per_group'], $search_query, $sort_args, $archive_url, $group_headings); ?>
+    <?php endif; ?>
+</div>
 <?php
 
 	return ob_get_clean();
@@ -217,15 +222,15 @@ function dbr_resources_header_shortcode($atts)
 
 	ob_start();
 ?>
-	<div class="dbr-resources__header">
-		<?php if ($h1) : ?>
-			<h1 class="dbr-resources__title"><?php echo esc_html($h1); ?></h1>
-		<?php endif; ?>
-		<?php if ($description) : ?>
-			<p class="dbr-resources__description"><?php echo esc_html($description); ?></p>
-		<?php endif; ?>
-	</div>
-	<?php
+<div class="dbr-resources__header">
+    <?php if ($h1) : ?>
+    <h1 class="dbr-resources__title"><?php echo esc_html($h1); ?></h1>
+    <?php endif; ?>
+    <?php if ($description) : ?>
+    <p class="dbr-resources__description"><?php echo esc_html($description); ?></p>
+    <?php endif; ?>
+</div>
+<?php
 	return ob_get_clean();
 }
 
@@ -316,12 +321,12 @@ function dbr_resources_render_grouped($terms, $per_group, $search_query, $sort_a
 			? $group_headings[$term->slug]
 			: $term->name;
 	?>
-		<section class="dbr-resources__group">
-			<header class="dbr-resources__group-header">
-				<h2><?php echo esc_html($heading); ?></h2>
-			</header>
-			<div class="dbr-resources__grid">
-				<?php
+<section class="dbr-resources__group">
+    <header class="dbr-resources__group-header">
+        <h2><?php echo esc_html($heading); ?></h2>
+    </header>
+    <div class="dbr-resources__grid">
+        <?php
 				if ($query->have_posts()) {
 					while ($query->have_posts()) {
 						$query->the_post();
@@ -332,15 +337,15 @@ function dbr_resources_render_grouped($terms, $per_group, $search_query, $sort_a
 					echo '<p class="dbr-resources__empty">No resources found.</p>';
 				}
 				?>
-			</div>
-			<div class="dbr-resources__view-more">
-				<a class="dbr-resources__button"
-					href="<?php echo esc_url(add_query_arg('resource-type', $term->slug, $archive_url)); ?>">
-					View more
-				</a>
-			</div>
-		</section>
-	<?php
+    </div>
+    <div class="dbr-resources__view-more">
+        <a class="dbr-resources__button"
+            href="<?php echo esc_url(add_query_arg('resource-type', $term->slug, $archive_url)); ?>">
+            View more
+        </a>
+    </div>
+</section>
+<?php
 	}
 	return ob_get_clean();
 }
@@ -359,26 +364,32 @@ function dbr_resources_render_single_term($term_slug, $search_query, $sort_args,
 
 	ob_start();
 	?>
-	<section class="dbr-resources__group">
-		<header class="dbr-resources__group-header">
-			<h2><?php echo esc_html($term->name); ?></h2>
-		</header>
-		<div class="dbr-resources__grid">
-			<?php
+<section class="dbr-resources__group">
+    <header class="dbr-resources__group-header">
+        <h2><?php echo esc_html($term->name); ?></h2>
+    </header>
+    <div class="dbr-resources__grid dbr-resources__grid--single">
+        <?php
 			if ($query->have_posts()) {
+				$post_count = 0;
 				while ($query->have_posts()) {
 					$query->the_post();
 					echo dbr_resources_render_card(get_the_ID(), $term_slug);
+					$post_count++;
+					// Add hr after every 3 items (one row), but not after the last item
+					if ($post_count % 3 === 0 && $query->current_post + 1 < $query->post_count) {
+						echo '<hr class="dbr-resources__separator">';
+					}
 				}
 				wp_reset_postdata();
 			} else {
 				echo '<p class="dbr-resources__empty">No resources found.</p>';
 			}
 			?>
-		</div>
-		<?php if ($query->max_num_pages > 1) : ?>
-			<div class="dbr-resources__pagination">
-				<?php
+    </div>
+    <?php if ($query->max_num_pages > 1) : ?>
+    <div class="dbr-resources__pagination">
+        <?php
 				$base = add_query_arg('paged', '%#%', $archive_url);
 				$pagination_args = array(
 					'base' => $base,
@@ -398,10 +409,10 @@ function dbr_resources_render_single_term($term_slug, $search_query, $sort_args,
 				);
 				echo paginate_links($pagination_args);
 				?>
-			</div>
-		<?php endif; ?>
-	</section>
-	<?php
+    </div>
+    <?php endif; ?>
+</section>
+<?php
 
 	return ob_get_clean();
 }
@@ -420,52 +431,60 @@ function dbr_resources_render_card($post_id, $term_slug)
 			$pdf_file = function_exists('get_field') ? get_field('pdf_file', $post_id) : '';
 			$link = $pdf_file ? $pdf_file : $permalink;
 	?>
-			<a class="dbr-card dbr-card--free" href="<?php echo esc_url($link); ?>" target="_blank" rel="noopener">
-				<?php if ($thumb_url) : ?>
-					<img class="dbr-card__image" src="<?php echo esc_url($thumb_url); ?>" alt="<?php echo esc_attr($title); ?>">
-				<?php endif; ?>
-				<h3 class="dbr-card__title"><?php echo esc_html($title); ?></h3>
-				<p class="dbr-card__excerpt"><?php echo esc_html($excerpt); ?></p>
-			</a>
-		<?php
+<a class="dbr-card dbr-card--free" href="<?php echo esc_url($link); ?>" target="_blank" rel="noopener">
+    <?php if ($thumb_url) : ?>
+    <img class="dbr-card__image" src="<?php echo esc_url($thumb_url); ?>" alt="<?php echo esc_attr($title); ?>">
+    <?php endif; ?>
+    <h3 class="dbr-card__title"><?php echo esc_html($title); ?></h3>
+    <p class="dbr-card__excerpt"><?php echo esc_html($excerpt); ?></p>
+</a>
+<?php
 			break;
 		case 'book-purchase':
 			// Use redirection_url ACF field for book purchases
 			$redirection_url = function_exists('get_field') ? get_field('redirection_url', $post_id) : '';
 			$link = $redirection_url ? $redirection_url : $permalink;
 		?>
-			<a class="dbr-card dbr-card--book" href="<?php echo esc_url($link); ?>" target="_blank" rel="noopener">
-				<div class="dbr-card__media"
-					style="<?php echo $thumb_url ? 'background-image:url(' . esc_url($thumb_url) . ');' : ''; ?>">
-					<?php if ($thumb_url) : ?>
-						<img class="dbr-card__media-img" src="<?php echo esc_url($thumb_url); ?>" alt="<?php echo esc_attr($title); ?>">
-					<?php endif; ?>
-				</div>
-				<h3 class="dbr-card__title"><?php echo esc_html($title); ?></h3>
-			</a>
-		<?php
+<a class="dbr-card dbr-card--book" href="<?php echo esc_url($link); ?>" target="_blank" rel="noopener">
+    <div class="dbr-card__media"
+        style="<?php echo $thumb_url ? 'background-image:url(' . esc_url($thumb_url) . ');' : ''; ?>">
+        <?php if ($thumb_url) : ?>
+        <img class="dbr-card__media-img" src="<?php echo esc_url($thumb_url); ?>" alt="<?php echo esc_attr($title); ?>">
+        <?php endif; ?>
+    </div>
+    <h3 class="dbr-card__title"><?php echo esc_html($title); ?></h3>
+</a>
+<?php
 			break;
 		case 'video':
 			$video_url = function_exists('get_field') ? get_field('video_url', $post_id) : '';
+			// Use placeholder if no featured image
+			if (!$thumb_url) {
+				$thumb_url = DBR_RESOURCES_URL . 'video_placeholder.png';
+			}
 		?>
-			<div class="dbr-card dbr-card--video" data-video-url="<?php echo esc_url($video_url); ?>">
-				<?php if ($thumb_url) : ?>
-					<img class="dbr-card__image" src="<?php echo esc_url($thumb_url); ?>" alt="<?php echo esc_attr($title); ?>">
-				<?php endif; ?>
-				<button class="dbr-card__play" type="button" aria-label="Play video">
-					<span></span>
-				</button>
-				<h3 class="dbr-card__title"><?php echo esc_html($title); ?></h3>
-			</div>
-		<?php
+<div class="dbr-card dbr-card--video" data-video-url="<?php echo esc_url($video_url); ?>">
+    <div class="dbr-card__video-wrapper">
+        <div class="dbr-card__overlay-img">
+            <img class="dbr-card__image" src="<?php echo esc_url($thumb_url); ?>" alt="<?php echo esc_attr($title); ?>">
+            <span class="dbr-card__title dbr-card__title--overlay"><?php echo esc_html($title); ?></span>
+        </div>
+        <button class="dbr-card__play" type="button" aria-label="Play video">
+            <span></span>
+        </button>
+        <h3 class="dbr-card__title"><?php echo esc_html($title); ?></h3>
+        <p class="dbr-card__excerpt"><?php echo esc_html($excerpt); ?></p>
+    </div>
+</div>
+<?php
 			break;
 		default:
 			// Default to permalink
 			$link = $permalink;
 		?>
-			<a class="dbr-card" href="<?php echo esc_url($link); ?>">
-				<h3 class="dbr-card__title"><?php echo esc_html($title); ?></h3>
-			</a>
+<a class="dbr-card" href="<?php echo esc_url($link); ?>">
+    <h3 class="dbr-card__title"><?php echo esc_html($title); ?></h3>
+</a>
 <?php
 	}
 
