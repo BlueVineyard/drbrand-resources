@@ -64,9 +64,44 @@
     });
   };
 
+  const initExcerptToggles = () => {
+    const wrappers = document.querySelectorAll(".dbr-card__excerpt-wrapper");
+
+    wrappers.forEach((wrapper) => {
+      const excerpt = wrapper.querySelector(".dbr-card__excerpt");
+      const button = wrapper.querySelector(".dbr-card__read-more");
+
+      if (!excerpt || !button) return;
+
+      // Check if text overflows (more than 3 lines)
+      const lineHeight = parseFloat(getComputedStyle(excerpt).lineHeight);
+      const maxHeight = lineHeight * 3;
+
+      // Temporarily expand to measure full height
+      excerpt.classList.add("is-expanded");
+      const fullHeight = excerpt.scrollHeight;
+      excerpt.classList.remove("is-expanded");
+
+      if (fullHeight > maxHeight + 1) {
+        wrapper.classList.add("has-overflow");
+
+        button.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+
+          const isExpanded = excerpt.classList.toggle("is-expanded");
+          button.textContent = isExpanded ? "Show less" : "Read more";
+        });
+      }
+    });
+  };
+
   const init = () => {
     // Initialize custom dropdowns
     initCustomSelects();
+
+    // Initialize excerpt read more toggles
+    initExcerptToggles();
 
     // Initialize video cards
     const cards = document.querySelectorAll(".dbr-card--video");

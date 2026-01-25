@@ -3,7 +3,7 @@
 /**
  * Plugin Name: DrBrand Resources
  * Description: Resources filter and listing for the Resource post type.
- * Version: 1.8.0
+ * Version: 1.9.0
  * Author: Rohan T George
  */
 
@@ -11,7 +11,7 @@ if (! defined('ABSPATH')) {
 	exit;
 }
 
-define('DBR_RESOURCES_VERSION', '1.8.0');
+define('DBR_RESOURCES_VERSION', '1.9.0');
 define('DBR_RESOURCES_DIR', plugin_dir_path(__FILE__));
 define('DBR_RESOURCES_URL', plugin_dir_url(__FILE__));
 
@@ -509,13 +509,18 @@ function dbr_resources_render_card($post_id, $term_slug)
 			$pdf_file = function_exists('get_field') ? get_field('pdf_file', $post_id) : '';
 			$link = $pdf_file ? $pdf_file : $permalink;
 	?>
-			<a class="dbr-card dbr-card--free" href="<?php echo esc_url($link); ?>" target="_blank" rel="noopener">
-				<?php if ($thumb_url) : ?>
-					<img class="dbr-card__image" src="<?php echo esc_url($thumb_url); ?>" alt="<?php echo esc_attr($title); ?>">
-				<?php endif; ?>
-				<h3 class="dbr-card__title"><?php echo esc_html($title); ?></h3>
-				<p class="dbr-card__excerpt"><?php echo esc_html($excerpt); ?></p>
-			</a>
+			<div class="dbr-card dbr-card--free">
+				<a href="<?php echo esc_url($link); ?>" target="_blank" rel="noopener">
+					<?php if ($thumb_url) : ?>
+						<img class="dbr-card__image" src="<?php echo esc_url($thumb_url); ?>" alt="<?php echo esc_attr($title); ?>">
+					<?php endif; ?>
+					<h3 class="dbr-card__title"><?php echo esc_html($title); ?></h3>
+				</a>
+				<div class="dbr-card__excerpt-wrapper">
+					<p class="dbr-card__excerpt"><?php echo esc_html($excerpt); ?></p>
+					<button type="button" class="dbr-card__read-more">Read more</button>
+				</div>
+			</div>
 		<?php
 			break;
 		case 'book-purchase':
@@ -560,7 +565,10 @@ function dbr_resources_render_card($post_id, $term_slug)
 						<span></span>
 					</button>
 					<h3 class="dbr-card__title"><?php echo esc_html($title); ?></h3>
-					<p class="dbr-card__excerpt"><?php echo esc_html($excerpt); ?></p>
+					<div class="dbr-card__excerpt-wrapper">
+						<p class="dbr-card__excerpt"><?php echo esc_html($excerpt); ?></p>
+						<button type="button" class="dbr-card__read-more">Read more</button>
+					</div>
 				</div>
 			</div>
 		<?php

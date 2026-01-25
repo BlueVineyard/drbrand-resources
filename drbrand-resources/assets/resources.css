@@ -210,6 +210,10 @@
   color: #22282b;
 }
 
+.dbr-card__excerpt-wrapper {
+  position: relative;
+}
+
 .dbr-card__excerpt {
   font-family: Mona Sans;
   font-weight: 300;
@@ -217,6 +221,45 @@
   line-height: 130%;
   color: #667085;
   margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.dbr-card__excerpt.is-expanded {
+  display: block;
+  -webkit-line-clamp: unset;
+  line-clamp: unset;
+  overflow: visible;
+}
+
+.dbr-card__read-more {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-top: 8px;
+  font-family: Mona Sans;
+  font-weight: 500;
+  font-size: 14px;
+  color: #1d3c34;
+  cursor: pointer;
+  display: none;
+}
+
+.dbr-card__read-more:hover {
+  text-decoration: underline;
+}
+
+.dbr-card__excerpt-wrapper.has-overflow .dbr-card__read-more {
+  display: inline-block;
+}
+
+.dbr-card--free a {
+  display: block;
+  text-decoration: none;
+  color: inherit;
 }
 
 .dbr-card--book .dbr-card__media {
